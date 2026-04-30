@@ -3,13 +3,14 @@ import { AudioUploader } from "./components/AudioUploader";
 import { ConsentToggle } from "./components/ConsentToggle";
 import { ProcessingOverlay } from "./components/ProcessingOverlay";
 import { ResultView } from "./components/ResultView";
-import { OperationStatus, AudioTransformationResult } from "./types";
+import { OperationStatus, AudioTransformationResult, TransformationMode } from "./types";
 import { processAudioTransformation } from "./lib/gemini";
 
 export default function App() {
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false);
+  const [mode, setMode] = useState<TransformationMode>(TransformationMode.COPY_VOICE_STYLE);
   const [status, setStatus] = useState<OperationStatus>(OperationStatus.IDLE);
   const [result, setResult] = useState<AudioTransformationResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -46,7 +47,7 @@ export default function App() {
       
       setTimeout(() => setStatus(OperationStatus.ANALYZING), 3000);
       
-      const aiResult = await processAudioTransformation(refBase64, srcBase64, consent);
+      const aiResult = await processAudioTransformation(refBase64, srcBase64, consent, mode);
       
       setStatus(OperationStatus.PLANNING);
       
@@ -99,7 +100,29 @@ export default function App() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <ConsentToggle checked={consent} onChange={setConsent} />
+            <div className="flex flex-col gap-4">
+              <ConsentToggle checked={consent} onChange={setConsent} />
+              
+              <div className="hardware-widget p-4 border-[#222]">
+                <div className="mono-label text-[10px] mb-3 text-zinc-500 uppercase tracking-widest">Orchestration Mode</div>
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={() => setMode(TransformationMode.COPY_VOICE_STYLE)}
+                    className={`text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between ${mode === TransformationMode.COPY_VOICE_STYLE ? 'border-[#00FF00] bg-[#00FF00]/5 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                  >
+                    <span>A — COPY VOICE STYLE</span>
+                    {mode === TransformationMode.COPY_VOICE_STYLE && <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00] shadow-[0_0_8px_#00FF00]" />}
+                  </button>
+                  <button 
+                    onClick={() => setMode(TransformationMode.KEEP_ORIGINAL_VOICE)}
+                    className={`text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between ${mode === TransformationMode.KEEP_ORIGINAL_VOICE ? 'border-blue-500 bg-blue-500/5 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                  >
+                    <span>B — KEEP ORIGINAL VOICE</span>
+                    {mode === TransformationMode.KEEP_ORIGINAL_VOICE && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />}
+                  </button>
+                </div>
+              </div>
+            </div>
             
             <div className="hardware-widget flex-1 p-6 flex flex-col justify-between gap-8 border-[#222]">
               <div className="space-y-4">

@@ -1,3 +1,8 @@
+export enum TransformationMode {
+  COPY_VOICE_STYLE = "copy_voice_style",
+  KEEP_ORIGINAL_VOICE = "keep_original_voice"
+}
+
 export enum OperationStatus {
   IDLE = "idle",
   VALIDATING = "validating",
@@ -9,34 +14,19 @@ export enum OperationStatus {
 }
 
 export interface AudioTransformationResult {
-  consent_check: {
-    passed: boolean;
-    message: string;
-  };
-  input_validation: {
-    reference_audio: {
-      status: "ok" | "failed";
-      notes: string;
-    };
-    source_audio: {
-      status: "ok" | "failed";
-      notes: string;
-    };
+  status: "ok" | "blocked";
+  mode: TransformationMode;
+  validation: {
+    ownership_verified: boolean;
+    file_quality_ok: boolean;
+    format_supported: boolean;
   };
   analysis: {
-    reference_style_summary: string[];
-    source_transcript: string;
-    source_language: string;
+    reference_features: string[];
+    target_transcript: string;
   };
-  transformation_plan: {
-    pipeline: string[];
-    recommended_models: string[];
-    post_processing: string[];
-  };
-  safety: {
-    risk_level: "low" | "medium" | "high";
-    blocked_reason: string;
-  };
-  final_response: string;
+  action_taken: string[];
+  warnings: string[];
+  output_instructions: string;
   transformed_audio_base64?: string;
 }

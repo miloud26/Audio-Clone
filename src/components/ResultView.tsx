@@ -116,7 +116,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
                 <h3 className="mono-label text-sm">Tone Extraction Matrix</h3>
               </div>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {result.analysis.reference_style_summary.map((attr, i) => (
+                {result.analysis.reference_features.map((attr, i) => (
                   <li key={i} className="flex items-center gap-3 bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00]" />
                     <span className="text-xs text-zinc-300 leading-tight">{attr}</span>
@@ -131,10 +131,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
                 <h3 className="mono-label text-sm">Source Phonetic Content</h3>
               </div>
               <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 italic text-sm text-zinc-300 leading-relaxed">
-                "{result.analysis.source_transcript}"
-              </div>
-              <div className="flex justify-end">
-                <span className="mono-label text-[10px]">Detected Language: {result.analysis.source_language}</span>
+                "{result.analysis.target_transcript}"
               </div>
             </section>
 
@@ -144,7 +141,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
                 <h3 className="mono-label text-sm">Synthesis & Reshaping Roadmap</h3>
               </div>
               <div className="flex flex-col gap-2">
-                {result.transformation_plan.pipeline.map((step, i) => (
+                {result.action_taken.map((step, i) => (
                   <div key={i} className="flex items-center gap-4 text-xs">
                     <span className="mono-label w-8 text-zinc-600">{(i + 1).toString().padStart(2, '0')}</span>
                     <span className="text-zinc-300">{step}</span>
@@ -153,16 +150,32 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
               </div>
             </section>
 
+            {result.warnings.length > 0 && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2 text-yellow-500">
+                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+                  <h3 className="mono-label text-[10px] uppercase font-bold">System Warnings</h3>
+                </div>
+                <div className="flex flex-col gap-1">
+                  {result.warnings.map((warning, i) => (
+                    <div key={i} className="text-[10px] text-zinc-500 italic bg-yellow-500/5 p-2 rounded border border-yellow-500/10">
+                      • {warning}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <section className="mt-4 pt-6 border-t border-zinc-800 flex flex-col items-center text-center gap-4">
               <div className={`
                 flex items-center gap-2 px-4 py-2 rounded-full border
-                ${result.safety.risk_level === 'low' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-orange-500/10 border-orange-500/20 text-orange-500'}
+                ${result.status === 'ok' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}
               `}>
                 <Shield size={14} />
-                <span className="mono-label text-[9px]">Safety Status: {result.safety.risk_level} Risk</span>
+                <span className="mono-label text-[9px]">Authorization Status: {result.status.toUpperCase()}</span>
               </div>
               <p className="text-zinc-400 text-sm max-w-md italic">
-                {result.final_response}
+                {result.output_instructions}
               </p>
             </section>
           </div>

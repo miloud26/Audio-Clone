@@ -37,12 +37,19 @@ apiRouter.get("/health", (req, res) => {
 apiRouter.post("/transform", async (req, res) => {
   console.log("Processing transformation request...");
   try {
-    const { referenceBase64, sourceBase64, consent } = req.body;
+    const { referenceBase64, sourceBase64, consent, mode } = req.body;
 
     if (!consent) {
       return res.status(400).json({
         error: "Consent required",
         message: "User did not explicitly confirm consent."
+      });
+    }
+
+    if (!mode) {
+      return res.status(400).json({
+        error: "Mode required",
+        message: "Please select a transformation mode (Copy Voice Style or Keep Original Voice)."
       });
     }
 
@@ -56,17 +63,30 @@ apiRouter.post("/transform", async (req, res) => {
     const ai = getGenAI();
 
     const prompt = `
-      You are an advanced Audio Vocal Orchestration Engine.
-      Task: Extract the vocal signature (tone, pitch, resonance, and emotional cadence) from the Reference Audio and apply it as a transformation roadmap to the Source Audio.
+      System Update: You are a professional audio processing system working on files that the user owns or has explicit permission to use only.
       
-      Requirements:
-      1. Vocal Signature Extraction: Analyze the Reference for frequency range, timbre, and prosody.
-      2. Content Mapping: Transcribe the Source and identify its phonetic structure.
-      3. Reshaping Plan: Create a step-by-step DSP (Digital Signal Processing) and AI orchestration plan to reshape the Source audio so it matches the tone of the Reference.
+      Task:
+      Refine/Rebuild a Target Audio file based on a Reference Audio file.
       
-      Safety: Refuse if the reference audio belongs to a public figure or if consent is not verified.
+      Parameters:
+      - MODE: ${mode}
+      - Reference Audio: Provided for style/tone extraction (if mode is "copy_voice_style")
+      - Target Audio (Source): Provided for content reconstruction (linguistic preservation)
       
-      Return a structured JSON output.
+      Operational Logic:
+      1. Verification: Only proceed if ownership/consent is verified.
+      2. Content Analysis: Extract transcription from Target Audio.
+      3. Style Extraction: If mode is "copy_voice_style", analyze Reference for pitch, intonation, rhythm, pace, and energy.
+      4. Synthesis: Orchestrate the transformation.
+      
+      Rules:
+      - DO NOT impersonate without authorization.
+      - DO NOT change linguistic content.
+      - If "copy_voice_style", copy ONLY [pitch, intonation, rhythm, speaking pace, energy, pause pattern].
+      - If "keep_original_voice", DO NOT use Reference to change timbre/identity.
+      - If Reference is poor quality, warn the user.
+      
+      Output ONLY valid JSON matching the specified schema.
     `;
 
     const result = await ai.models.generateContent({
@@ -83,75 +103,38 @@ apiRouter.post("/transform", async (req, res) => {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            consent_check: {
+            status: { type: Type.STRING, enum: ["ok", "blocked"] },
+            mode: { type: Type.STRING },
+            validation: {
               type: Type.OBJECT,
               properties: {
-                passed: { type: Type.BOOLEAN },
-                message: { type: Type.STRING }
+                ownership_verified: { type: Type.BOOLEAN },
+                file_quality_ok: { type: Type.BOOLEAN },
+                format_supported: { type: Type.BOOLEAN }
               },
-              required: ["passed", "message"]
-            },
-            input_validation: {
-              type: Type.OBJECT,
-              properties: {
-                reference_audio: {
-                  type: Type.OBJECT,
-                  properties: {
-                    status: { type: Type.STRING },
-                    notes: { type: Type.STRING }
-                  },
-                  required: ["status", "notes"]
-                },
-                source_audio: {
-                  type: Type.OBJECT,
-                  properties: {
-                    status: { type: Type.STRING },
-                    notes: { type: Type.STRING }
-                  },
-                  required: ["status", "notes"]
-                }
-              },
-              required: ["reference_audio", "source_audio"]
+              required: ["ownership_verified", "file_quality_ok", "format_supported"]
             },
             analysis: {
               type: Type.OBJECT,
               properties: {
-                reference_style_summary: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING }
-                },
-                source_transcript: { type: Type.STRING },
-                source_language: { type: Type.STRING }
+                reference_features: { type: Type.ARRAY, items: { type: Type.STRING } },
+                target_transcript: { type: Type.STRING }
               },
-              required: ["reference_style_summary", "source_transcript", "source_language"]
+              required: ["reference_features", "target_transcript"]
             },
-            transformation_plan: {
-              type: Type.OBJECT,
-              properties: {
-                pipeline: { type: Type.ARRAY, items: { type: Type.STRING } },
-                recommended_models: { type: Type.ARRAY, items: { type: Type.STRING } },
-                post_processing: { type: Type.ARRAY, items: { type: Type.STRING } }
-              },
-              required: ["pipeline", "recommended_models", "post_processing"]
-            },
-            safety: {
-              type: Type.OBJECT,
-              properties: {
-                risk_level: { type: Type.STRING },
-                blocked_reason: { type: Type.STRING }
-              },
-              required: ["risk_level", "blocked_reason"]
-            },
-            final_response: { type: Type.STRING },
-            transformed_audio_base64: { type: Type.STRING, description: "Base64 string of the synthesized audio (simulated in this environment)" }
+            action_taken: { type: Type.ARRAY, items: { type: Type.STRING } },
+            warnings: { type: Type.ARRAY, items: { type: Type.STRING } },
+            output_instructions: { type: Type.STRING },
+            transformed_audio_base64: { type: Type.STRING }
           },
           required: [
-            "consent_check",
-            "input_validation",
+            "status",
+            "mode",
+            "validation",
             "analysis",
-            "transformation_plan",
-            "safety",
-            "final_response"
+            "action_taken",
+            "warnings",
+            "output_instructions"
           ]
         }
       }
@@ -160,10 +143,10 @@ apiRouter.post("/transform", async (req, res) => {
     const responseText = result.text || "{}";
     const parsed = JSON.parse(responseText);
     
-    // In this sandbox environment, we return the Source audio as a placeholder 
-    // for the "transformed" result, indicating that the transformation logic 
-    // (orchestration plan) has been calculated.
-    parsed.transformed_audio_base64 = sourceBase64;
+    // Simulations in sandbox: Return source as transformed if status is ok
+    if (parsed.status === "ok") {
+      parsed.transformed_audio_base64 = sourceBase64;
+    }
     
     res.json(parsed);
 
