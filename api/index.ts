@@ -35,58 +35,60 @@ apiRouter.get("/health", (req, res) => {
 });
 
 apiRouter.post("/transform", async (req, res) => {
-  console.log("Processing transformation request...");
+  console.log("Processing audio workflow request...");
   try {
-    const { referenceBase64, sourceBase64, consent, mode } = req.body;
+    const { referenceBase64, sourceBase64, consent } = req.body;
 
     if (!consent) {
       return res.status(400).json({
         error: "Consent required",
-        message: "User did not explicitly confirm consent."
-      });
-    }
-
-    if (!mode) {
-      return res.status(400).json({
-        error: "Mode required",
-        message: "Please select a transformation mode (Copy Voice Style or Keep Original Voice)."
+        message: "User must verify ownership or explicit permission."
       });
     }
 
     if (!referenceBase64 || !sourceBase64) {
       return res.status(400).json({
         error: "Missing data",
-        message: "Both reference and source audio streams are required."
+        message: "Reference and source audio are required."
       });
     }
 
     const ai = getGenAI();
 
     const prompt = `
-      SYSTEM UPDATE — CONSENT-BASED VOICE PRESERVATION
-
-      You are an audio processing system for user-owned or explicitly consented audio only.
-
-      Primary objective:
-      - Preserve the original speaker identity of the target audio.
-      - Improve clarity, noise reduction, and intelligibility.
-      - Maintain the target audio’s own voice identity; do not replace it with any other speaker identity.
-
-      Strict constraints:
-      - Do not imitate, clone, or reproduce the identity of any real person other than the verified owner of the uploaded audio.
-      - Do not infer or transfer voice identity from a reference file unless ownership/consent is explicitly verified.
-      - Do not alter the target speaker into a different person’s voice.
-      - Do not claim the output is someone else’s voice.
-      - If consent or ownership is unclear, block the transformation and keep the original voice unchanged.
-
-      Pipeline Requirements:
-      1) Validate file format, duration, and quality.
-      2) Verify ownership/consent metadata.
-      3) Extract transcript from the target audio.
-      4) Enhance the target audio while preserving its speaker identity.
-      5) Reject any request that attempts identity transfer.
-
-      Output ONLY valid JSON.
+      SYSTEM UPDATE — CONSENT-BASED AUDIO WORKFLOW
+      
+      You are a professional audio processing system working only on files owned or licensed by the user.
+      
+      OBJECTIVE:
+      1) Analyze Reference (Clip 1) for non-identifying features: pitch range, intonation, pace, energy, noise profile.
+      2) Transcribe Source (Clip 2) accurately.
+      3) Output Source (Clip 2) with its original voice identity intact, only technically enhanced.
+      
+      STRICT RULES:
+      - NO identity transfer or cloning from Reference.
+      - NO impersonation or creating a voice that claims to be someone else.
+      - NO change to linguistic content.
+      - Use Reference ONLY for general acoustic analysis as requested.
+      
+      REJECTED:
+      - Any request for voice cloning or identity matching other than source enhancement.
+      
+      RETURN ONLY VALID JSON:
+      {
+        "status": "ok|blocked",
+        "consent_verified": true|false,
+        "reference_analysis": {
+          "pitch_range": "...",
+          "intonation": "...",
+          "pace": "...",
+          "energy": "...",
+          "noise_profile": "..."
+        },
+        "source_transcript": "...",
+        "processing_actions": ["..."],
+        "blocked_reason": "..."
+      }
     `;
 
     const result = await ai.models.generateContent({
@@ -94,7 +96,6 @@ apiRouter.post("/transform", async (req, res) => {
       contents: [
         { role: "user", parts: [
           { text: prompt },
-          { text: `Target Mode: ${mode}` },
           { inlineData: { mimeType: "audio/mpeg", data: referenceBase64 } },
           { inlineData: { mimeType: "audio/mpeg", data: sourceBase64 } }
         ]}
@@ -105,37 +106,29 @@ apiRouter.post("/transform", async (req, res) => {
           type: Type.OBJECT,
           properties: {
             status: { type: Type.STRING, enum: ["ok", "blocked"] },
-            processing_mode: { type: Type.STRING, enum: ["preserve_original_voice", "enhance_only", "blocked"] },
-            validation: {
+            consent_verified: { type: Type.BOOLEAN },
+            reference_analysis: {
               type: Type.OBJECT,
               properties: {
-                ownership_verified: { type: Type.BOOLEAN },
-                file_quality_ok: { type: Type.BOOLEAN },
-                format_supported: { type: Type.BOOLEAN }
+                pitch_range: { type: Type.STRING },
+                intonation: { type: Type.STRING },
+                pace: { type: Type.STRING },
+                energy: { type: Type.STRING },
+                noise_profile: { type: Type.STRING }
               },
-              required: ["ownership_verified", "file_quality_ok", "format_supported"]
+              required: ["pitch_range", "intonation", "pace", "energy", "noise_profile"]
             },
-            analysis: {
-              type: Type.OBJECT,
-              properties: {
-                original_identity_metrics: { type: Type.ARRAY, items: { type: Type.STRING } },
-                target_transcript: { type: Type.STRING }
-              },
-              required: ["original_identity_metrics", "target_transcript"]
-            },
-            enhancement_actions: { type: Type.ARRAY, items: { type: Type.STRING } },
-            warnings: { type: Type.ARRAY, items: { type: Type.STRING } },
-            final_export_ready: { type: Type.BOOLEAN },
-            transformed_audio_base64: { type: Type.STRING }
+            source_transcript: { type: Type.STRING },
+            processing_actions: { type: Type.ARRAY, items: { type: Type.STRING } },
+            blocked_reason: { type: Type.STRING }
           },
           required: [
             "status",
-            "processing_mode",
-            "validation",
-            "analysis",
-            "enhancement_actions",
-            "warnings",
-            "final_export_ready"
+            "consent_verified",
+            "reference_analysis",
+            "source_transcript",
+            "processing_actions",
+            "blocked_reason"
           ]
         }
       }
@@ -144,7 +137,6 @@ apiRouter.post("/transform", async (req, res) => {
     const responseText = result.text || "{}";
     const parsed = JSON.parse(responseText);
     
-    // Simulations in sandbox: Return source as transformed if status is ok
     if (parsed.status === "ok") {
       parsed.transformed_audio_base64 = sourceBase64;
     }

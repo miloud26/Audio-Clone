@@ -10,7 +10,6 @@ export default function App() {
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false);
-  const [mode, setMode] = useState<TransformationMode>(TransformationMode.PRESERVE_ORIGINAL_VOICE);
   const [status, setStatus] = useState<OperationStatus>(OperationStatus.IDLE);
   const [result, setResult] = useState<AudioTransformationResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -30,7 +29,7 @@ export default function App() {
   const handleProcess = async () => {
     if (!referenceFile || !sourceFile) return;
     if (!consent) {
-       setErrorMessage("Consent required to proceed.");
+       setErrorMessage("Ownership/Consent verification required.");
        return;
     }
 
@@ -40,14 +39,13 @@ export default function App() {
     try {
       const refBase64 = await fileToBase64(referenceFile);
       
-      // Artificial steps for UX realism as per "Hardware" theme
       setTimeout(() => setStatus(OperationStatus.TRANSCRIBING), 1500);
       
       const srcBase64 = await fileToBase64(sourceFile);
       
       setTimeout(() => setStatus(OperationStatus.ANALYZING), 3000);
       
-      const aiResult = await processAudioTransformation(refBase64, srcBase64, consent, mode);
+      const aiResult = await processAudioTransformation(refBase64, srcBase64, consent);
       
       setStatus(OperationStatus.PLANNING);
       
@@ -59,7 +57,7 @@ export default function App() {
     } catch (err: any) {
       console.error(err);
       setStatus(OperationStatus.IDLE);
-      setErrorMessage(err.message || "System Failure: Unable to process audio streams.");
+      setErrorMessage(err.message || "System Failure: Secure processing aborted.");
     }
   };
 
@@ -104,23 +102,10 @@ export default function App() {
               <ConsentToggle checked={consent} onChange={setConsent} />
               
               <div className="hardware-widget p-4 border-[#222]">
-                <div className="mono-label text-[10px] mb-3 text-zinc-500 uppercase tracking-widest">Preservation Mode</div>
-                <div className="flex flex-col gap-2">
-                  <button 
-                    onClick={() => setMode(TransformationMode.PRESERVE_ORIGINAL_VOICE)}
-                    className={`text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between ${mode === TransformationMode.PRESERVE_ORIGINAL_VOICE ? 'border-[#00FF00] bg-[#00FF00]/5 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
-                  >
-                    <span>A — PRESERVE & CLEAN</span>
-                    {mode === TransformationMode.PRESERVE_ORIGINAL_VOICE && <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00] shadow-[0_0_8px_#00FF00]" />}
-                  </button>
-                  <button 
-                    onClick={() => setMode(TransformationMode.ENHANCE_ONLY)}
-                    className={`text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between ${mode === TransformationMode.ENHANCE_ONLY ? 'border-blue-500 bg-blue-500/5 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
-                  >
-                    <span>B — ENHANCE ONLY</span>
-                    {mode === TransformationMode.ENHANCE_ONLY && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />}
-                  </button>
-                </div>
+                <div className="mono-label text-[10px] mb-2 text-[#00FF00] uppercase tracking-widest">Protocol: Secure Enhancement</div>
+                <p className="text-[10px] text-zinc-500 leading-relaxed italic">
+                  Systems will analyze acoustic parameters from the reference while strictly preserving the speaker identity of the source material. Identity cloning is blocked.
+                </p>
               </div>
             </div>
             

@@ -16,18 +16,16 @@ export enum OperationStatus {
 
 export interface AudioTransformationResult {
   status: "ok" | "blocked";
-  processing_mode: TransformationMode;
-  validation: {
-    ownership_verified: boolean;
-    file_quality_ok: boolean;
-    format_supported: boolean;
+  consent_verified: boolean;
+  reference_analysis: {
+    pitch_range: string;
+    intonation: string;
+    pace: string;
+    energy: string;
+    noise_profile: string;
   };
-  analysis: {
-    original_identity_metrics: string[];
-    target_transcript: string;
-  };
-  enhancement_actions: string[];
-  warnings: string[];
-  final_export_ready: boolean;
+  source_transcript: string;
+  processing_actions: string[];
+  blocked_reason: string;
   transformed_audio_base64?: string;
 }

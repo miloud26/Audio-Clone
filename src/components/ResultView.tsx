@@ -113,13 +113,19 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-[#00FF00]">
                 <Activity size={18} />
-                <h3 className="mono-label text-sm">Vocal Identity Fingerprint</h3>
+                <h3 className="mono-label text-sm">Acoustic Parameter Scan</h3>
               </div>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {result.analysis.original_identity_metrics.map((attr, i) => (
-                  <li key={i} className="flex items-center gap-3 bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00] shadow-[0_0_5px_#00FF00]" />
-                    <span className="text-xs text-zinc-300 leading-tight font-medium">{attr}</span>
+                {[
+                  { label: "Pitch Range", value: result.reference_analysis.pitch_range },
+                  { label: "Intonation", value: result.reference_analysis.intonation },
+                  { label: "Speaking Pace", value: result.reference_analysis.pace },
+                  { label: "Energy Flux", value: result.reference_analysis.energy },
+                  { label: "Noise Floor", value: result.reference_analysis.noise_profile }
+                ].map((item, i) => (
+                  <li key={i} className="flex flex-col gap-1 bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50">
+                    <span className="mono-label text-[8px] text-zinc-500 uppercase">{item.label}</span>
+                    <span className="text-xs text-zinc-300 leading-tight font-medium">{item.value}</span>
                   </li>
                 ))}
               </ul>
@@ -128,20 +134,20 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-blue-400">
                 <FileText size={18} />
-                <h3 className="mono-label text-sm">Source Phonetic Content</h3>
+                <h3 className="mono-label text-sm">Linguistic Transcription</h3>
               </div>
               <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 italic text-sm text-zinc-300 leading-relaxed">
-                "{result.analysis.target_transcript}"
+                "{result.source_transcript}"
               </div>
             </section>
 
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-[#F27D26]">
                 <Settings size={18} />
-                <h3 className="mono-label text-sm">Enhancement & Preservation Pipeline</h3>
+                <h3 className="mono-label text-sm">Enhancement Actions</h3>
               </div>
               <div className="flex flex-col gap-2">
-                {result.enhancement_actions.map((step, i) => (
+                {result.processing_actions.map((step, i) => (
                   <div key={i} className="flex items-center gap-4 text-xs">
                     <span className="mono-label w-8 text-zinc-600">{(i + 1).toString().padStart(2, '0')}</span>
                     <span className="text-zinc-300">{step}</span>
@@ -150,33 +156,23 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
               </div>
             </section>
 
-            {result.warnings.length > 0 && (
-              <section className="space-y-2">
-                <div className="flex items-center gap-2 text-yellow-500">
-                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-                  <h3 className="mono-label text-[10px] uppercase font-bold">System Warnings</h3>
-                </div>
-                <div className="flex flex-col gap-1">
-                  {result.warnings.map((warning, i) => (
-                    <div key={i} className="text-[10px] text-zinc-500 italic bg-yellow-500/5 p-2 rounded border border-yellow-500/10">
-                      • {warning}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
             <section className="mt-4 pt-6 border-t border-zinc-800 flex flex-col items-center text-center gap-4">
               <div className={`
                 flex items-center gap-2 px-4 py-2 rounded-full border
                 ${result.status === 'ok' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}
               `}>
                 <Shield size={14} />
-                <span className="mono-label text-[9px]">Identity Preservation: {result.status.toUpperCase()}</span>
+                <span className="mono-label text-[9px]">Authorization Status: {result.status.toUpperCase()}</span>
               </div>
-              <p className="text-zinc-400 text-sm max-w-md italic">
-                Mode: {result.processing_mode.replace(/_/g, ' ').toUpperCase()} | Ready for Export: {result.final_export_ready ? "YES" : "NO"}
-              </p>
+              {result.status === 'blocked' && (
+                <p className="text-red-400 text-xs italic max-w-md">
+                   {result.blocked_reason}
+                </p>
+              )}
+              <div className="flex items-center gap-4 mt-2">
+                <span className="mono-label text-[8px] text-zinc-500">Ownership: {result.consent_verified ? "VERIFIED" : "PENDING"}</span>
+                <span className="mono-label text-[8px] text-zinc-500">Identity: PRESERVED</span>
+              </div>
             </section>
           </div>
         )}

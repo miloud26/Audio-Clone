@@ -3,8 +3,7 @@ import { AudioTransformationResult, TransformationMode } from "../types";
 export async function processAudioTransformation(
   referenceBase64: string,
   sourceBase64: string,
-  consent: boolean,
-  mode: TransformationMode
+  consent: boolean
 ): Promise<AudioTransformationResult> {
   const response = await fetch("/api/transform", {
     method: "POST",
@@ -15,7 +14,6 @@ export async function processAudioTransformation(
       referenceBase64,
       sourceBase64,
       consent,
-      mode
     }),
   });
 
