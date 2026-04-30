@@ -63,30 +63,27 @@ apiRouter.post("/transform", async (req, res) => {
     const ai = getGenAI();
 
     const prompt = `
-      System Update: You are a professional audio processing system working on files that the user owns or has explicit permission to use only.
+      System Update: You are a High-Fidelity Vocal Identity Reconstruction Engine.
       
-      Task:
-      Refine/Rebuild a Target Audio file based on a Reference Audio file.
+      Task: 
+      Perform a "Deep Identity Transfer" from the Reference Audio to the Target Audio.
       
       Parameters:
       - MODE: ${mode}
-      - Reference Audio: Provided for style/tone extraction (if mode is "copy_voice_style")
-      - Target Audio (Source): Provided for content reconstruction (linguistic preservation)
+      - Reference Audio: The source of "Vocal Identity" (Timbre, Resonance, Harmonic Profile, and unique Prosody).
+      - Target Audio: The source of "Linguistic Content" (Semantics and Verbal Structure).
       
-      Operational Logic:
-      1. Verification: Only proceed if ownership/consent is verified.
-      2. Content Analysis: Extract transcription from Target Audio.
-      3. Style Extraction: If mode is "copy_voice_style", analyze Reference for pitch, intonation, rhythm, pace, and energy.
-      4. Synthesis: Orchestrate the transformation.
+      Operational Directives:
+      1. Identity Extraction: Map the unique vocal fingerprint of the Reference (how the vocal folds vibrate, oral cavity resonance).
+      2. Prosody Alignment: Analyze the cadence, stress patterns, and emotional weight of the Reference.
+      3. Synthesis Logic: Calculate the precise delta needed to reshape the Target's vocal tract response to match the Reference's Identity while keeping the Target's words.
       
-      Rules:
-      - DO NOT impersonate without authorization.
-      - DO NOT change linguistic content.
-      - If "copy_voice_style", copy ONLY [pitch, intonation, rhythm, speaking pace, energy, pause pattern].
-      - If "keep_original_voice", DO NOT use Reference to change timbre/identity.
-      - If Reference is poor quality, warn the user.
+      Rules for "copy_voice_style":
+      - Total Identity Takeover: The output must aim to sound like the person in the Reference is saying the words from the Target.
+      - Extract: [Timbre/Voice Color, Fundamental Frequency Range, Formant Shifting, Breathiness, Nasality].
+      - Refuse: Public figure impersonation without authorization.
       
-      Output ONLY valid JSON matching the specified schema.
+      Output ONLY valid JSON.
     `;
 
     const result = await ai.models.generateContent({

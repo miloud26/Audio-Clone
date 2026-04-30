@@ -113,13 +113,13 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-[#00FF00]">
                 <Activity size={18} />
-                <h3 className="mono-label text-sm">Tone Extraction Matrix</h3>
+                <h3 className="mono-label text-sm">Vocal Identity Fingerprint</h3>
               </div>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {result.analysis.reference_features.map((attr, i) => (
                   <li key={i} className="flex items-center gap-3 bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00]" />
-                    <span className="text-xs text-zinc-300 leading-tight">{attr}</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00] shadow-[0_0_5px_#00FF00]" />
+                    <span className="text-xs text-zinc-300 leading-tight font-medium">{attr}</span>
                   </li>
                 ))}
               </ul>
