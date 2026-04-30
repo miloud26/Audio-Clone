@@ -55,7 +55,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-[#00FF00]">
                 <Activity size={18} />
-                <h3 className="mono-label text-sm">Vocal Style Analysis</h3>
+                <h3 className="mono-label text-sm">Tone Extraction Matrix</h3>
               </div>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {result.analysis.reference_style_summary.map((attr, i) => (
@@ -70,20 +70,20 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-blue-400">
                 <FileText size={18} />
-                <h3 className="mono-label text-sm">Source Transcript</h3>
+                <h3 className="mono-label text-sm">Source Phonetic Content</h3>
               </div>
               <div className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 italic text-sm text-zinc-300 leading-relaxed">
                 "{result.analysis.source_transcript}"
               </div>
               <div className="flex justify-end">
-                <span className="mono-label text-[10px]">Language: {result.analysis.source_language}</span>
+                <span className="mono-label text-[10px]">Detected Language: {result.analysis.source_language}</span>
               </div>
             </section>
 
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-[#F27D26]">
                 <Settings size={18} />
-                <h3 className="mono-label text-sm">Orchestration Pipeline</h3>
+                <h3 className="mono-label text-sm">Synthesis & Reshaping Roadmap</h3>
               </div>
               <div className="flex flex-col gap-2">
                 {result.transformation_plan.pipeline.map((step, i) => (

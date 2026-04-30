@@ -56,17 +56,17 @@ apiRouter.post("/transform", async (req, res) => {
     const ai = getGenAI();
 
     const prompt = `
-      Analyze these two audio files for a consent-based audio transformation.
-      Reference Audio: Analysis of high-level vocal style attributes only (pitch, cadence, resonance).
-      Source Audio: Analysis for speech content, language, and phonetic patterns.
+      You are an advanced Audio Vocal Orchestration Engine.
+      Task: Extract the vocal signature (tone, pitch, resonance, and emotional cadence) from the Reference Audio and apply it as a transformation roadmap to the Source Audio.
       
-      Goal:
-      - Preserve linguistic content of source.
-      - Extract general acoustic style descriptors from reference.
-      - Refuse any request to imitate a real person without authorization.
-      - Verify if reference quality is sufficient.
+      Requirements:
+      1. Vocal Signature Extraction: Analyze the Reference for frequency range, timbre, and prosody.
+      2. Content Mapping: Transcribe the Source and identify its phonetic structure.
+      3. Reshaping Plan: Create a step-by-step DSP (Digital Signal Processing) and AI orchestration plan to reshape the Source audio so it matches the tone of the Reference.
       
-      Return a structured JSON output according to the schema.
+      Safety: Refuse if the reference audio belongs to a public figure or if consent is not verified.
+      
+      Return a structured JSON output.
     `;
 
     const result = await ai.models.generateContent({
