@@ -1,7 +1,7 @@
 export enum OperationStatus {
   IDLE = "idle",
   VALIDATING = "validating",
-  TRANScribing = "transcribing",
+  TRANSCRIBING = "transcribing",
   ANALYZING = "analyzing",
   PLANNING = "planning",
   COMPLETE = "complete",

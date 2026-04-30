@@ -18,8 +18,14 @@ export async function processAudioTransformation(
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: "Unknown server error" }));
-    throw new Error(errorData.message || "Failed to process audio transformation.");
+    let errorMessage = `Server error: ${response.status} ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch (e) {
+      // Fallback if not JSON
+    }
+    throw new Error(errorMessage);
   }
 
   return await response.json();

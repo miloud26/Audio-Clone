@@ -40,7 +40,7 @@ export default function App() {
       const refBase64 = await fileToBase64(referenceFile);
       
       // Artificial steps for UX realism as per "Hardware" theme
-      setTimeout(() => setStatus(OperationStatus.TRANScribing), 1500);
+      setTimeout(() => setStatus(OperationStatus.TRANSCRIBING), 1500);
       
       const srcBase64 = await fileToBase64(sourceFile);
       
@@ -55,10 +55,10 @@ export default function App() {
         setStatus(OperationStatus.IDLE);
       }, 1500);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setStatus(OperationStatus.IDLE);
-      setErrorMessage("System Failure: Unable to process audio streams.");
+      setErrorMessage(err.message || "System Failure: Unable to process audio streams.");
     }
   };
 

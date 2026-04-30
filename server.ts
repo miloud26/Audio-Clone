@@ -8,22 +8,42 @@ import { GoogleGenAI, Type } from "@google/genai";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Lazy initialization of Gemini
+let genAIInstance: any = null;
+function getGenAI() {
+  if (!genAIInstance) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY environment variable is required. Please set it in the Secrets panel.");
+    }
+    genAIInstance = new GoogleGenAI({ apiKey: key });
+  }
+  return genAIInstance;
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Initialize Gemini
-  const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY || "");
-
   app.use(cors());
-  app.use(express.json({ limit: "20mb" }));
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Request Logging Middleware
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+  });
 
   // API Routes
-  app.get("/api/health", (req, res) => {
+  const apiRouter = express.Router();
+
+  apiRouter.get("/health", (req, res) => {
     res.json({ status: "ok", service: "Audio Clone API", timestamp: new Date().toISOString() });
   });
 
-  app.post("/api/transform", async (req, res) => {
+  apiRouter.post("/transform", async (req, res) => {
+    console.log("Processing transformation request...");
     try {
       const { referenceBase64, sourceBase64, consent } = req.body;
 
@@ -41,8 +61,9 @@ async function startServer() {
         });
       }
 
-      const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash", // Using a stable model name if gemini-3 isn't ready
+      const ai = getGenAI();
+      const model = ai.getGenerativeModel({
+        model: "gemini-1.5-flash",
       });
 
       const prompt = `
@@ -63,8 +84,8 @@ async function startServer() {
         contents: [
           { role: "user", parts: [
             { text: prompt },
-            { inlineData: { mimeType: "audio/mp3", data: referenceBase64 } },
-            { inlineData: { mimeType: "audio/mp3", data: sourceBase64 } }
+            { inlineData: { mimeType: "audio/mpeg", data: referenceBase64 } },
+            { inlineData: { mimeType: "audio/mpeg", data: sourceBase64 } }
           ]}
         ],
         generationConfig: {
@@ -149,13 +170,15 @@ async function startServer() {
       res.json(JSON.parse(responseText));
 
     } catch (error: any) {
-      console.error("Gemini processing error:", error);
+      console.error("Gemini processing error:", error.message);
       res.status(500).json({
         error: "Processing failed",
         message: error.message || "An error occurred during audio orchestration."
       });
     }
   });
+
+  app.use("/api", apiRouter);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

@@ -9,8 +9,8 @@ interface ProcessingOverlayProps {
 
 const statusMessages = {
   [OperationStatus.VALIDATING]: "Calibrating signal chains...",
-  [OperationStatus.TRANScribing]: "Decoding linguistic patterns...",
-  [OperationStatus.ANALYZING]: "Extracting harmonic style descriptors...",
+  [OperationStatus.TRANSCRIBING]: "Decoding linguistic patterns...",
+  [OperationStatus.ANALYZING]: "Harmonizing spectral data...",
   [OperationStatus.PLANNING]: "Generating transformation orchestration...",
   [OperationStatus.COMPLETE]: "Sequence complete.",
   [OperationStatus.FAILED]: "System fault detected.",
