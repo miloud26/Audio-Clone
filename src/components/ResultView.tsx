@@ -116,7 +116,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
                 <h3 className="mono-label text-sm">Vocal Identity Fingerprint</h3>
               </div>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {result.analysis.reference_features.map((attr, i) => (
+                {result.analysis.original_identity_metrics.map((attr, i) => (
                   <li key={i} className="flex items-center gap-3 bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00] shadow-[0_0_5px_#00FF00]" />
                     <span className="text-xs text-zinc-300 leading-tight font-medium">{attr}</span>
@@ -138,10 +138,10 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-[#F27D26]">
                 <Settings size={18} />
-                <h3 className="mono-label text-sm">Synthesis & Reshaping Roadmap</h3>
+                <h3 className="mono-label text-sm">Enhancement & Preservation Pipeline</h3>
               </div>
               <div className="flex flex-col gap-2">
-                {result.action_taken.map((step, i) => (
+                {result.enhancement_actions.map((step, i) => (
                   <div key={i} className="flex items-center gap-4 text-xs">
                     <span className="mono-label w-8 text-zinc-600">{(i + 1).toString().padStart(2, '0')}</span>
                     <span className="text-zinc-300">{step}</span>
@@ -172,10 +172,10 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
                 ${result.status === 'ok' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}
               `}>
                 <Shield size={14} />
-                <span className="mono-label text-[9px]">Authorization Status: {result.status.toUpperCase()}</span>
+                <span className="mono-label text-[9px]">Identity Preservation: {result.status.toUpperCase()}</span>
               </div>
               <p className="text-zinc-400 text-sm max-w-md italic">
-                {result.output_instructions}
+                Mode: {result.processing_mode.replace(/_/g, ' ').toUpperCase()} | Ready for Export: {result.final_export_ready ? "YES" : "NO"}
               </p>
             </section>
           </div>

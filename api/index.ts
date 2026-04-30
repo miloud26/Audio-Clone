@@ -63,26 +63,29 @@ apiRouter.post("/transform", async (req, res) => {
     const ai = getGenAI();
 
     const prompt = `
-      System Update: You are a High-Fidelity Vocal Identity Reconstruction Engine.
-      
-      Task: 
-      Perform a "Deep Identity Transfer" from the Reference Audio to the Target Audio.
-      
-      Parameters:
-      - MODE: ${mode}
-      - Reference Audio: The source of "Vocal Identity" (Timbre, Resonance, Harmonic Profile, and unique Prosody).
-      - Target Audio: The source of "Linguistic Content" (Semantics and Verbal Structure).
-      
-      Operational Directives:
-      1. Identity Extraction: Map the unique vocal fingerprint of the Reference (how the vocal folds vibrate, oral cavity resonance).
-      2. Prosody Alignment: Analyze the cadence, stress patterns, and emotional weight of the Reference.
-      3. Synthesis Logic: Calculate the precise delta needed to reshape the Target's vocal tract response to match the Reference's Identity while keeping the Target's words.
-      
-      Rules for "copy_voice_style":
-      - Total Identity Takeover: The output must aim to sound like the person in the Reference is saying the words from the Target.
-      - Extract: [Timbre/Voice Color, Fundamental Frequency Range, Formant Shifting, Breathiness, Nasality].
-      - Refuse: Public figure impersonation without authorization.
-      
+      SYSTEM UPDATE — CONSENT-BASED VOICE PRESERVATION
+
+      You are an audio processing system for user-owned or explicitly consented audio only.
+
+      Primary objective:
+      - Preserve the original speaker identity of the target audio.
+      - Improve clarity, noise reduction, and intelligibility.
+      - Maintain the target audio’s own voice identity; do not replace it with any other speaker identity.
+
+      Strict constraints:
+      - Do not imitate, clone, or reproduce the identity of any real person other than the verified owner of the uploaded audio.
+      - Do not infer or transfer voice identity from a reference file unless ownership/consent is explicitly verified.
+      - Do not alter the target speaker into a different person’s voice.
+      - Do not claim the output is someone else’s voice.
+      - If consent or ownership is unclear, block the transformation and keep the original voice unchanged.
+
+      Pipeline Requirements:
+      1) Validate file format, duration, and quality.
+      2) Verify ownership/consent metadata.
+      3) Extract transcript from the target audio.
+      4) Enhance the target audio while preserving its speaker identity.
+      5) Reject any request that attempts identity transfer.
+
       Output ONLY valid JSON.
     `;
 
@@ -91,6 +94,7 @@ apiRouter.post("/transform", async (req, res) => {
       contents: [
         { role: "user", parts: [
           { text: prompt },
+          { text: `Target Mode: ${mode}` },
           { inlineData: { mimeType: "audio/mpeg", data: referenceBase64 } },
           { inlineData: { mimeType: "audio/mpeg", data: sourceBase64 } }
         ]}
@@ -101,7 +105,7 @@ apiRouter.post("/transform", async (req, res) => {
           type: Type.OBJECT,
           properties: {
             status: { type: Type.STRING, enum: ["ok", "blocked"] },
-            mode: { type: Type.STRING },
+            processing_mode: { type: Type.STRING, enum: ["preserve_original_voice", "enhance_only", "blocked"] },
             validation: {
               type: Type.OBJECT,
               properties: {
@@ -114,24 +118,24 @@ apiRouter.post("/transform", async (req, res) => {
             analysis: {
               type: Type.OBJECT,
               properties: {
-                reference_features: { type: Type.ARRAY, items: { type: Type.STRING } },
+                original_identity_metrics: { type: Type.ARRAY, items: { type: Type.STRING } },
                 target_transcript: { type: Type.STRING }
               },
-              required: ["reference_features", "target_transcript"]
+              required: ["original_identity_metrics", "target_transcript"]
             },
-            action_taken: { type: Type.ARRAY, items: { type: Type.STRING } },
+            enhancement_actions: { type: Type.ARRAY, items: { type: Type.STRING } },
             warnings: { type: Type.ARRAY, items: { type: Type.STRING } },
-            output_instructions: { type: Type.STRING },
+            final_export_ready: { type: Type.BOOLEAN },
             transformed_audio_base64: { type: Type.STRING }
           },
           required: [
             "status",
-            "mode",
+            "processing_mode",
             "validation",
             "analysis",
-            "action_taken",
+            "enhancement_actions",
             "warnings",
-            "output_instructions"
+            "final_export_ready"
           ]
         }
       }

@@ -10,7 +10,7 @@ export default function App() {
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false);
-  const [mode, setMode] = useState<TransformationMode>(TransformationMode.COPY_VOICE_STYLE);
+  const [mode, setMode] = useState<TransformationMode>(TransformationMode.PRESERVE_ORIGINAL_VOICE);
   const [status, setStatus] = useState<OperationStatus>(OperationStatus.IDLE);
   const [result, setResult] = useState<AudioTransformationResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -104,21 +104,21 @@ export default function App() {
               <ConsentToggle checked={consent} onChange={setConsent} />
               
               <div className="hardware-widget p-4 border-[#222]">
-                <div className="mono-label text-[10px] mb-3 text-zinc-500 uppercase tracking-widest">Orchestration Mode</div>
+                <div className="mono-label text-[10px] mb-3 text-zinc-500 uppercase tracking-widest">Preservation Mode</div>
                 <div className="flex flex-col gap-2">
                   <button 
-                    onClick={() => setMode(TransformationMode.COPY_VOICE_STYLE)}
-                    className={`text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between ${mode === TransformationMode.COPY_VOICE_STYLE ? 'border-[#00FF00] bg-[#00FF00]/5 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                    onClick={() => setMode(TransformationMode.PRESERVE_ORIGINAL_VOICE)}
+                    className={`text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between ${mode === TransformationMode.PRESERVE_ORIGINAL_VOICE ? 'border-[#00FF00] bg-[#00FF00]/5 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
                   >
-                    <span>A — COPY VOICE STYLE</span>
-                    {mode === TransformationMode.COPY_VOICE_STYLE && <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00] shadow-[0_0_8px_#00FF00]" />}
+                    <span>A — PRESERVE & CLEAN</span>
+                    {mode === TransformationMode.PRESERVE_ORIGINAL_VOICE && <div className="w-1.5 h-1.5 rounded-full bg-[#00FF00] shadow-[0_0_8px_#00FF00]" />}
                   </button>
                   <button 
-                    onClick={() => setMode(TransformationMode.KEEP_ORIGINAL_VOICE)}
-                    className={`text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between ${mode === TransformationMode.KEEP_ORIGINAL_VOICE ? 'border-blue-500 bg-blue-500/5 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                    onClick={() => setMode(TransformationMode.ENHANCE_ONLY)}
+                    className={`text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between ${mode === TransformationMode.ENHANCE_ONLY ? 'border-blue-500 bg-blue-500/5 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
                   >
-                    <span>B — KEEP ORIGINAL VOICE</span>
-                    {mode === TransformationMode.KEEP_ORIGINAL_VOICE && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />}
+                    <span>B — ENHANCE ONLY</span>
+                    {mode === TransformationMode.ENHANCE_ONLY && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />}
                   </button>
                 </div>
               </div>

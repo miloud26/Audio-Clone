@@ -1,6 +1,7 @@
 export enum TransformationMode {
-  COPY_VOICE_STYLE = "copy_voice_style",
-  KEEP_ORIGINAL_VOICE = "keep_original_voice"
+  PRESERVE_ORIGINAL_VOICE = "preserve_original_voice",
+  ENHANCE_ONLY = "enhance_only",
+  BLOCKED = "blocked"
 }
 
 export enum OperationStatus {
@@ -15,18 +16,18 @@ export enum OperationStatus {
 
 export interface AudioTransformationResult {
   status: "ok" | "blocked";
-  mode: TransformationMode;
+  processing_mode: TransformationMode;
   validation: {
     ownership_verified: boolean;
     file_quality_ok: boolean;
     format_supported: boolean;
   };
   analysis: {
-    reference_features: string[];
+    original_identity_metrics: string[];
     target_transcript: string;
   };
-  action_taken: string[];
+  enhancement_actions: string[];
   warnings: string[];
-  output_instructions: string;
+  final_export_ready: boolean;
   transformed_audio_base64?: string;
 }
