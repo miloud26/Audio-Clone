@@ -54,9 +54,6 @@ apiRouter.post("/transform", async (req, res) => {
     }
 
     const ai = getGenAI();
-    const model = ai.getGenerativeModel({
-      model: "gemini-1.5-flash",
-    });
 
     const prompt = `
       Analyze these two audio files for a consent-based audio transformation.
@@ -72,7 +69,8 @@ apiRouter.post("/transform", async (req, res) => {
       Return a structured JSON output according to the schema.
     `;
 
-    const result = await model.generateContent({
+    const result = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
       contents: [
         { role: "user", parts: [
           { text: prompt },
@@ -80,7 +78,7 @@ apiRouter.post("/transform", async (req, res) => {
           { inlineData: { mimeType: "audio/mpeg", data: sourceBase64 } }
         ]}
       ],
-      generationConfig: {
+      config: {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -158,7 +156,7 @@ apiRouter.post("/transform", async (req, res) => {
       }
     });
 
-    const responseText = result.response.text();
+    const responseText = result.text || "{}";
     res.json(JSON.parse(responseText));
 
   } catch (error: any) {
