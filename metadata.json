@@ -1,0 +1,11 @@
+{
+  "name": "Audio Clone",
+  "description": "A consent-based audio transformation tool that analyzes vocal styles and preserves speech content safely.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "audio_processing",
+    "ai_transformation"
+  ]
+}
