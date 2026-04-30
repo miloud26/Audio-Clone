@@ -38,4 +38,5 @@ export interface AudioTransformationResult {
     blocked_reason: string;
   };
   final_response: string;
+  transformed_audio_base64?: string;
 }

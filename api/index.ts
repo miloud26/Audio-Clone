@@ -142,7 +142,8 @@ apiRouter.post("/transform", async (req, res) => {
               },
               required: ["risk_level", "blocked_reason"]
             },
-            final_response: { type: Type.STRING }
+            final_response: { type: Type.STRING },
+            transformed_audio_base64: { type: Type.STRING, description: "Base64 string of the synthesized audio (simulated in this environment)" }
           },
           required: [
             "consent_check",
@@ -157,7 +158,14 @@ apiRouter.post("/transform", async (req, res) => {
     });
 
     const responseText = result.text || "{}";
-    res.json(JSON.parse(responseText));
+    const parsed = JSON.parse(responseText);
+    
+    // In this sandbox environment, we return the Source audio as a placeholder 
+    // for the "transformed" result, indicating that the transformation logic 
+    // (orchestration plan) has been calculated.
+    parsed.transformed_audio_base64 = sourceBase64;
+    
+    res.json(parsed);
 
   } catch (error: any) {
     console.error("Gemini processing error:", error.message);

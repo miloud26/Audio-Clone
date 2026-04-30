@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { AudioTransformationResult } from "../types";
-import { Clipboard, Check, Activity, Shield, FileText, Settings } from "lucide-react";
+import { Clipboard, Check, Activity, Shield, FileText, Settings, Download, Play, Pause } from "lucide-react";
 
 interface ResultViewProps {
   result: AudioTransformationResult;
@@ -9,11 +9,32 @@ interface ResultViewProps {
 export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
   const [copied, setCopied] = useState(false);
   const [viewMode, setViewMode] = useState<"summary" | "json">("summary");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(JSON.stringify(result, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownload = () => {
+    if (!result.transformed_audio_base64) return;
+    const link = document.createElement("a");
+    link.href = `data:audio/mpeg;base64,${result.transformed_audio_base64}`;
+    link.download = "transformed_vocal_clone.mp3";
+    link.click();
+  };
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
   };
 
   return (
@@ -51,6 +72,43 @@ export const ResultView: React.FC<ResultViewProps> = ({ result }) => {
           </div>
         ) : (
           <div className="flex flex-col gap-8">
+            {/* Audio Result Hero */}
+            {result.transformed_audio_base64 && (
+              <section className="bg-gradient-to-br from-zinc-900 to-black p-6 rounded-xl border border-[#00FF00]/20 flex flex-col gap-4 items-center">
+                <div className="w-16 h-16 rounded-full bg-[#00FF00]/10 flex items-center justify-center border border-[#00FF00]/30 shadow-[0_0_20px_rgba(0,255,0,0.1)]">
+                  <Play size={24} className="text-[#00FF00] fill-[#00FF00]" />
+                </div>
+                <div className="text-center">
+                  <h4 className="mono-label text-xs mb-1 text-white">Transformed Signal Ready</h4>
+                  <p className="text-[10px] text-zinc-500">Frequency matched to reference signature</p>
+                </div>
+                
+                <div className="flex gap-3 w-full max-w-xs">
+                  <button 
+                    onClick={togglePlay}
+                    className="flex-1 flex items-center justify-center gap-2 bg-[#00FF00] text-black font-bold uppercase text-[10px] py-3 rounded-lg hover:brightness-110 transition-all active:scale-95"
+                  >
+                    {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+                    {isPlaying ? "Pause Stream" : "Monitor Output"}
+                  </button>
+                  <button 
+                    onClick={handleDownload}
+                    className="px-4 flex items-center justify-center bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 transition-all"
+                    title="Download Transformed Audio"
+                  >
+                    <Download size={16} />
+                  </button>
+                </div>
+                
+                <audio 
+                  ref={audioRef} 
+                  src={`data:audio/mpeg;base64,${result.transformed_audio_base64}`} 
+                  className="hidden"
+                  onEnded={() => setIsPlaying(false)}
+                />
+              </section>
+            )}
+
             {/* Summary Section */}
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-[#00FF00]">
